@@ -1555,7 +1555,7 @@ Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& n
   if ( m_Handle == 0 )
     return RESULT_FILEOPEN;
 
-#if defined(__sun) && defined(__SVR4)
+#if (defined(__sun) && defined(__SVR4)) || defined(_WIN32)
   struct stat s;
 #endif
   struct dirent* entry;
@@ -1570,7 +1570,7 @@ Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& n
 
   next_item_name.assign(entry->d_name, strlen(entry->d_name));
 
-#if defined(__sun) && defined(__SVR4)
+#if (defined(__sun) && defined(__SVR4)) || defined(_WIN32)
 
   stat(entry->d_name, &s);
 
@@ -1583,10 +1583,11 @@ Kumu::DirScannerEx::GetNext(std::string& next_item_name, DirectoryEntryType_t& n
     case S_IFREG:
       next_item_type = DET_FILE;
       break;
-
+#ifndef _WIN32
     case S_IFLNK:
       next_item_type = DET_LINK;
       break;
+#endif
 
     default:
       next_item_type = DET_DEV;

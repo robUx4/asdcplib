@@ -37,7 +37,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef KM_WIN32
 # include <io.h>
-# include "dirent_win.h"
 #else
 # include <dirent.h>
 # include <unistd.h>
@@ -46,6 +45,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <regex.h>
 #endif
 
+#include <dirent.h>
 #include <sys/stat.h>
 
 
