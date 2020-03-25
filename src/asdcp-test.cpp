@@ -53,8 +53,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <WavFileWriter.h>
 #include <MXF.h>
 #include <Metadata.h>
-#include <openssl/sha.h>
-
+#include "nettle_map.h"
 #include <iostream>
 #include <assert.h>
 

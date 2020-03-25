@@ -31,8 +31,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AS_02_internal.h"
 #include "KM_xml.h"
-#include <openssl/sha.h>
-
+#include "nettle_map.h"
 using namespace Kumu;
 using namespace ASDCP;
 

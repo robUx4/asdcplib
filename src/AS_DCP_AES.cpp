@@ -39,19 +39,8 @@ using Kumu::DefaultLogSink;
 using namespace ASDCP;
 const int KEY_SIZE_BITS = 128;
 
-#include <openssl/aes.h>
-#include <openssl/sha.h>
-#include <openssl/bn.h>
-#include <openssl/err.h>
+#include "nettle_map.h"
 
-
-void
-print_ssl_error()
-{
-  char err_buf[256];
-  unsigned long errval = ERR_get_error();
-  DefaultLogSink().Error("OpenSSL: %s\n", ERR_error_string(errval, err_buf));
-}
 
 //------------------------------------------------------------------------------------------
 
@@ -79,11 +68,8 @@ ASDCP::AESEncContext::InitKey(const byte_t* key)
   m_Context = new h__AESContext;
   m_Context->m_KeyBuf.Set(key);
 
-  if ( AES_set_encrypt_key(m_Context->m_KeyBuf.Value(), KEY_SIZE_BITS, m_Context) )
-    {
-      print_ssl_error();
-      return RESULT_CRYPT_INIT;
-    }
+  // nettle set/get encrypt key returns void
+  aes128_set_encrypt_key(m_Context,  m_Context->m_KeyBuf.Value());
 
   return RESULT_OK;
 }
@@ -182,11 +168,7 @@ ASDCP::AESDecContext::InitKey(const byte_t* key)
   m_Context = new h__AESContext;
   m_Context->m_KeyBuf.Set(key);
 
-  if ( AES_set_decrypt_key(m_Context->m_KeyBuf.Value(), KEY_SIZE_BITS, m_Context) )
-    {
-      print_ssl_error();
-      return RESULT_CRYPT_INIT;
-    }
+  aes128_set_decrypt_key(m_Context, m_Context->m_KeyBuf.Value());
 
   return RESULT_OK;
 }

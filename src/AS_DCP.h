@@ -52,7 +52,7 @@ be be limited to:
  o SMPTE ST 422:2006 - JPEG 2000 picture in GC
  o SMPTE ST 382:2007 - WAV/PCM sound in GC
  o IETF RFC 2104 - HMAC/SHA1
- o NIST FIPS 197 - AES (Rijndael) (via OpenSSL)
+ o NIST FIPS 197 - AES (Rijndael) (via Nettle)
 
  o MXF Interop Track File Specification
  o MXF Interop Track File Essence Encryption Specification
@@ -75,7 +75,7 @@ The following use cases are supported by the library:
  o Read header metadata from an AS-DCP file
 
 This project depends upon the following libraries:
- - OpenSSL http://www.openssl.org/
+ - Nettle http://www.nettle.org/
  - Expat http://expat.sourceforge.net/  or
      Xerces-C http://xerces.apache.org/xerces-c/
    An XML library is not needed if you don't need support for SMPTE ST 429-5:2009.

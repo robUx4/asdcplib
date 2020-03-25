@@ -34,7 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <KM_fileio.h>
 #include <KM_prng.h>
-#include <openssl/aes.h>
+#include "nettle_map.h"
 #include <assert.h>
 
 using namespace Kumu;

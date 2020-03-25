@@ -65,7 +65,7 @@ if test "$ac_cv_sys_largefile_CC" != no; then
    CXX=$CXX$ac_cv_sys_largefile_CC
 fi
 
-AX_LIB_OPENSSL([0.9.7])
+AX_LIB_NETTLE([0.9.7])
 AX_LIB_EXPAT
 AX_LIB_XERCES
 

@@ -36,8 +36,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <KM_fileio.h>
 #include <KM_prng.h>
 #include <AS_DCP.h>
-#include <openssl/sha.h>
-
+#include "nettle_map.h"
 using namespace Kumu;
 
 

@@ -34,10 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <KM_mutex.h>
 #include <string.h>
 #include <assert.h>
-#include <openssl/aes.h>
-#include <openssl/sha.h>
-#include <openssl/bn.h>
-
+#include "nettle_map.h"
 using namespace Kumu;
 
 
@@ -104,7 +101,7 @@ public:
   set_key(const byte_t* key_fodder)
   {
     assert(key_fodder);
-    byte_t sha_buf[20];
+    byte_t sha_buf[SHA_DIGEST_LENGTH];
     SHA_CTX SHA;
     SHA1_Init(&SHA);
 
@@ -202,8 +199,7 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
   byte_t sha_buf[SHA_DIGEST_LENGTH];
   ui32_t const xkey_len = 64; // 512/8
   byte_t xkey[xkey_len];
-  BN_CTX* ctx1 = BN_CTX_new(); // used by BN_* functions
-  assert(ctx1);
+
 
   if ( key_size > xkey_len )
     DefaultLogSink().Warn("Key too large for FIPS 186 seed, truncating to 64 bytes.\n");
@@ -216,16 +212,12 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
     key_size = SHA_DIGEST_LENGTH; // pad short key ( b < 160 )
 
   // create the 2^b constant
-  BIGNUM *c_2powb = BN_new();
-  BIGNUM * c_2 = BN_new();
-  BIGNUM * c_b = BN_new();
-  assert(c_2powb);
-  assert(c_2);
-  assert(c_b);
-
-  BN_set_word(c_2, 2);
-  BN_set_word(c_b, key_size * 8);
-  BN_exp(c_2powb, c_2, c_b, ctx1);
+  mpz_t c_2powb, c_2, c_b, c_mod;
+  mpz_init(c_2powb);
+  mpz_init_set_si(c_2, 2);
+  mpz_init_set_si(c_b, key_size * 8);
+  mpz_init_set_si(c_mod, 1);
+  mpz_powm(c_2powb, c_2, c_b, c_mod);
 
   for (;;)
     {
@@ -236,11 +228,11 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
       SHA1_Update(&SHA, xkey, xkey_len);
 
       ui32_t* buf_p = (ui32_t*)sha_buf;
-      *buf_p++ = KM_i32_BE(SHA.h0);
-      *buf_p++ = KM_i32_BE(SHA.h1);
-      *buf_p++ = KM_i32_BE(SHA.h2);
-      *buf_p++ = KM_i32_BE(SHA.h3);
-      *buf_p++ = KM_i32_BE(SHA.h4);
+      *buf_p++ = KM_i32_BE(SHA.state[0]);
+      *buf_p++ = KM_i32_BE(SHA.state[1]);
+      *buf_p++ = KM_i32_BE(SHA.state[2]);
+      *buf_p++ = KM_i32_BE(SHA.state[3]);
+      *buf_p++ = KM_i32_BE(SHA.state[4]);
       memcpy(out_buf, sha_buf, xmin<ui32_t>(out_buf_len, SHA_DIGEST_LENGTH));
 
       if ( out_buf_len <= SHA_DIGEST_LENGTH )
@@ -250,32 +242,23 @@ Kumu::Gen_FIPS_186_Value(const byte_t* key, ui32_t key_size, byte_t* out_buf, ui
       out_buf += SHA_DIGEST_LENGTH;
 
       // step d -- XKEY = (1 + XKEY + x) mod 2^b
-      BIGNUM *bn_tmp = BN_new();
-      BIGNUM *bn_xkey = BN_new();
-      BIGNUM *bn_x_n = BN_new();
-      assert(bn_tmp);
-      assert(bn_xkey);
-      assert(bn_x_n);
+      mpz_t bn_tmp, bn_xkey, bn_x_n;
+      mpz_init(bn_tmp);
+      mpz_init(bn_xkey);
+      mpz_init(bn_x_n);
 
-      BN_bin2bn(xkey, key_size, bn_xkey);
-      BN_bin2bn(sha_buf, SHA_DIGEST_LENGTH, bn_x_n);
-      BN_add_word(bn_xkey, 1);            // xkey += 1
-      BN_add(bn_tmp, bn_xkey, bn_x_n);       // xkey += x
-      BN_mod(bn_xkey, bn_tmp, c_2powb, ctx1);  // xkey = xkey mod (2^b)
+      mpz_import (bn_xkey, key_size, 1, 1, 0, 0, xkey);
+      mpz_import (bn_x_n, SHA_DIGEST_LENGTH, 1, 1, 0, 0, sha_buf);
+      mpz_add_ui(bn_xkey,bn_xkey, 1);            // xkey += 1
+      mpz_add(bn_xkey, bn_xkey, bn_x_n);       // xkey += x
+      mpz_mod(bn_xkey, bn_xkey, c_2powb);  // xkey = xkey mod (2^b)
 
       memset(xkey, 0, xkey_len);
-      ui32_t bn_buf_len = BN_num_bytes(bn_xkey);
+      ui32_t bn_buf_len = bn_xkey->_mp_size;
       ui32_t idx = ( bn_buf_len < key_size ) ? key_size - bn_buf_len : 0;
-      BN_bn2bin(bn_xkey, &xkey[idx]);
-      BN_free(bn_tmp);
-      BN_free(bn_xkey);
-      BN_free(bn_x_n);
-    }
+      mpz_export (xkey+idx, NULL, 1, 1, 0, 0, bn_xkey);
 
-  BN_free(c_2powb);
-  BN_free(c_2);
-  BN_free(c_b);
-  BN_CTX_free(ctx1);
+    }
 }
 
 //
