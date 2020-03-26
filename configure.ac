@@ -53,6 +53,10 @@ case $host_os in
        openbsd*) openbsd_host=true ;;
        *)        openbsd_host=false ;;
 esac
+case $host_os in
+       cygwin* | mingw32*)
+           CPPFLAGS="${CPPFLAGS} -DKM_WIN32" ;;
+esac
 AM_CONDITIONAL([OPENBSD_HOST], [test x$openbsd_host = xtrue])
 AC_PROG_CC
 AC_PROG_CXX
