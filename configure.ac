@@ -133,8 +133,19 @@ AC_CHECK_LIB([pthread], [pthread_create])
 #AC_FUNC_STAT
 #AC_CHECK_FUNCS([getcwd memset regcomp strchr strerror strrchr strstr strtol])
 
+dnl Mimick CMake strings
+CPACK_PACKAGE_DESCRIPTION_SUMMARY="asdcplib from cinecert.com"
+CMAKE_INSTALL_PREFIX=${prefix}
+LIB_INSTALL_DIR=lib
+VERSION_STRING=${VERSION}
+AC_SUBST(CPACK_PACKAGE_DESCRIPTION_SUMMARY)
+AC_SUBST(CMAKE_INSTALL_PREFIX)
+AC_SUBST(LIB_INSTALL_DIR)
+AC_SUBST(VERSION_STRING)
+
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 asdcplib.pc
 		 win32/Makefile
 		 win32/Makefile.mak:win32/Makefile.wmk])
 AC_OUTPUT

@@ -51,3 +51,8 @@ set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_PATCH})
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME}{VERSION_MAJOR}.${VERSION_MINOR})
 include(CPack)
+
+# Produce a pkg-config file
+configure_file("asdcplib.pc.in" "asdcplib.pc" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/asdcplib.pc"
+		DESTINATION "${LIB_INSTALL_DIR}/pkgconfig")
